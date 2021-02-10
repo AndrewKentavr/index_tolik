@@ -5,16 +5,16 @@ import pygame
 import requests
 
 delta = 0.001
+longitude, latitude = 37.530887, 55.703118
 zoom_count = 0
 map_file = "map.png"
 map_request = "http://static-maps.yandex.ru/1.x/"
-params = {'ll': '37.530887,55.703118',
-          'l': 'map'
-          }
+params = {'l': 'map'}
 
 
 def picture_setup():
     params['spn'] = f'{delta},{delta}'
+    params['ll'] = f'{longitude},{latitude}'
     try:
         response = requests.get(map_request, params=params)
         assert response
@@ -32,6 +32,7 @@ def picture_setup():
 
 
 pygame.init()
+clock = pygame.time.Clock()
 screen = pygame.display.set_mode((600, 450))
 picture_setup()
 while pygame.event.wait().type != pygame.QUIT:
@@ -39,16 +40,31 @@ while pygame.event.wait().type != pygame.QUIT:
         keys = pygame.key.get_pressed()
         if keys[pygame.K_PAGEDOWN]:
             delta /= 10
-            if delta >= 0.001:
-                picture_setup()
-            else:
+            if delta < 0.001:
                 delta = 0.001
         elif keys[pygame.K_PAGEUP]:
             delta *= 10
-            if delta < 100.0:
-                picture_setup()
-            else:
-                delta = 100.0
+            if delta > 10.0:
+                delta = 10.0
+
+        if not -180 < longitude < 180:
+            longitude = -longitude
+        if latitude > 84:
+            latitude = -(83 + latitude % 1)
+        elif latitude < -84:
+            latitude = 83 + latitude % 1
+        if keys[pygame.K_LEFT]:
+            longitude -= 1
+        elif keys[pygame.K_RIGHT]:
+            longitude += 1
+        elif keys[pygame.K_UP]:
+            latitude += 1
+        elif keys[pygame.K_DOWN]:
+            latitude -= 1
+
+        print(latitude)
+        picture_setup()
+    clock.tick(60)
     pygame.display.flip()
 
 pygame.quit()
