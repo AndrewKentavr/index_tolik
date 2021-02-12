@@ -3,11 +3,16 @@ from UI import *
 
 pygame.init()
 clock = pygame.time.Clock()
+tick = 0
 screen = pygame.display.set_mode((600, 450))
 all_sprites = pygame.sprite.Group()
 
 search_font = pygame.font.Font(None, 18)
 LineEdit(all_sprites)
+MapButton(all_sprites, 'sat', 'sat_icon.png', [310, 10, 30, 30])
+MapButton(all_sprites, 'sat,skl', 'hybrid_icon.png', [340, 10, 30, 30])
+MapButton(all_sprites, 'map', 'map_icon.png', [370, 10, 30, 30])
+ResetButton(all_sprites, 'map', 'reset_icon.png', [565, 10, 30, 30])
 
 picture_setup(screen)
 while True:
@@ -53,7 +58,8 @@ while True:
                 Globals.latitude -= 1
         else:
             if keys[pygame.K_RETURN]:
-                Globals.longitude, Globals.latitude = geocoder_response(Globals.search_text)
+                Globals.longitude, Globals.latitude = geocoder_response(Globals.search_text.lower())
+                Globals.params['pt'] = f'{Globals.longitude},{Globals.latitude},pm2orl'
                 Globals.typing = False
         picture_setup(screen)
 
@@ -61,7 +67,13 @@ while True:
     all_sprites.draw(screen)
 
     search_text = search_font.render(Globals.search_text, True, (0, 0, 0))
+    if Globals.typing and tick <= Globals.FPS // 10:
+        search_text = search_font.render(Globals.search_text + '|', True, (0, 0, 0))
     screen.blit(search_text, (17, 20))
+
     Globals.click = False
-    clock.tick(60)
+    clock.tick(Globals.FPS)
+    if tick >= Globals.FPS // 5:
+        tick = 0
+    tick += 1
     pygame.display.flip()

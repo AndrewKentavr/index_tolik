@@ -50,7 +50,10 @@ def geocoder_response(text):
     try:
         assert response
         json_response = response.json()
-        root = json_response["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]
-        return [float(element) for element in root["Point"]["pos"].split()]
+        try:
+            root = json_response["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]
+            return [float(element) for element in root["Point"]["pos"].split()]
+        except IndexError:
+            pass
     except AssertionError:
         pass
